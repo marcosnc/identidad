@@ -62,13 +62,12 @@ class newSocket extends Thread
 //        		String completeAddress = "http://" + address + "/seguitra/con_seguimi.php?numentrada="+numero+"&dia="+dia+"&mes="+mes+"&ano="+anio; 
 //    			URL url = new URL(completeAddress);
 //    			URLConnection conn = url.openConnection(this.proxy);
-//    			lectura = new DataInputStream(conn.getInputStream());
-    			
-    			String rawData = "numentrada="+numero+"&dia="+dia+"&mes="+mes+"&ano="+anio;
+
+    			String rawData = "numentrada="+numero+"&dia="+dia+"&mes="+mes+"&ano="+anio+"&enviar=Consultar";
     			String type = "application/x-www-form-urlencoded";
     			String encodedData = URLEncoder.encode( rawData, "UTF-8" ); 
 //    			URL u = new URL("http://" + address + "/seguitra/con_seguimi.php");
-    			URL u = new URL(address + "/con_seguimi.php");
+    			URL u = new URL(address + "/index.php");
     			HttpURLConnection conn = (HttpURLConnection) u.openConnection();
     			conn.setDoOutput(true);
     			conn.setRequestMethod( "POST" );
@@ -76,6 +75,7 @@ class newSocket extends Thread
     			conn.setRequestProperty( "Content-Length", String.valueOf(encodedData.length()) );
     			OutputStream os = conn.getOutputStream();
     			os.write( encodedData.getBytes() );
+    			lectura = new DataInputStream(conn.getInputStream());
         	}
         }
         catch(Exception e) {
@@ -85,64 +85,72 @@ class newSocket extends Thread
 
     private void proceso(String linea)
     {
-        Pattern p = Pattern.compile("Por favor, verifique los datos e intente nuevamente");
+        // No hay información
+        if (extractAndIgnore(linea,
+                "Por favor, verifique los datos e intente nuevamente",
+                "No existe el numero de entrada %d"))
+            return;
+
+        // Ya emitido
+        if (extractAndIgnore(linea,
+                "retirar su",
+                "El numero de entrada %d ya se emitio"))
+            return;
+
+        // Agregar a Base de Datos
+        extractAndStore(linea,
+                "[0-9]{1,2}-[0-9]{1,5}([/,0-9,\\-]{1,5})",
+                "A: El numero de entrada %d se agrego a la base de datos con Matricula %s y fecha %s");
+
+        // Horario?
+        extractAndStore(linea,
+                "horario",
+                "B: No disponible. Numero: %d. Matricula: %s. Fecha: %s");
+
+    }
+
+    private boolean extractAndIgnore(String linea, String regex, String resultFormat) {
+        Pattern p = Pattern.compile(regex);
         Matcher m = p.matcher(linea);
-        if(m.find())
-        {
-            resultado = (new StringBuilder("No existe el numero de entrada ")).append(numero).toString();
+        if(m.find()) {
+            resultado = String.format(
+                    resultFormat,
+                    numero);
+            System.out.println(resultado);
+            return true;
+        }
+        return false;
+    }
+
+    private void extractAndStore(String linea, String regex, String resultFormat) {
+        Pattern p = Pattern.compile(regex);
+        Matcher m = p.matcher(linea);
+        if(m.find()) {
+            String matricula = m.group();
+            String num = rutinas.sacoCeros(matricula);
+            String mes2 = rutinas.getNumByMes(mes);
+            String fecha = (new StringBuilder(String.valueOf(dia))).append("/").append(mes2).append("/").append(String.valueOf(anio).substring(2, 4)).toString();
+
+            insertarEnBaseDeDatos(num, fecha);
+
+            resultado = String.format(
+                            resultFormat,
+                            numero,
+                            num,
+                            fecha);
+            System.out.println(resultado);
+        }
+    }
+
+    private void insertarEnBaseDeDatos(String num, String fecha) {
+        if(Boolean.parseBoolean(Identidad.properties.getProperty("ignore-db", "false"))){
             return;
         }
-        p = Pattern.compile("retirar su");
-        m = p.matcher(linea);
-        if(m.find())
-        {
-            resultado = (new StringBuilder("El numero de entrada ")).append(numero).append(" ya se emitio").toString();
-            return;
-        }
-        p = Pattern.compile("[0-9]{1,2}-[0-9]{1,5}([/,0-9,\\-]{1,5})");
-        m = p.matcher(linea);
-        if(m.find())
-        {
-        	/* DESCOMENTAR!!!
+        try {
             dbGestor db = new dbGestor(Identidad.properties.getProperty("dns"));
-            String matricula = m.group();
-            String num = rutinas.sacoCeros(matricula);
-            String mes2 = rutinas.getNumByMes(mes);
-            String fecha = (new StringBuilder(String.valueOf(dia))).append("/").append(mes2).append("/").append(String.valueOf(anio).substring(2, 4)).toString();
             db.inserTo(num, fecha);
-            resultado = (new StringBuilder("El numero de entrada ")).append(numero).append(" se agrego a la base de datos con Matricula ").append(num).append(" y fecha ").append(fecha).toString();
-            return;
-            */
-            String matricula = m.group();
-            String num = rutinas.sacoCeros(matricula);
-            String mes2 = rutinas.getNumByMes(mes);
-            String fecha = (new StringBuilder(String.valueOf(dia))).append("/").append(mes2).append("/").append(String.valueOf(anio).substring(2, 4)).toString();
-            resultado = (new StringBuilder("El numero de entrada ")).append(numero).append(" se agrego a la base de datos con Matricula ").append(num).append(" y fecha ").append(fecha).toString();
-            System.out.println("A: " + resultado);
-        }
-        p = Pattern.compile("horario");
-        m = p.matcher(linea);
-        if(m.find())
-        {
-        	/* DESCOMENTAR!!!
-            dbGestor db = new dbGestor(Identidad.properties.getProperty("dns"));
-            String matricula = m.group();
-            String num = rutinas.sacoCeros(matricula);
-            String mes2 = rutinas.getNumByMes(mes);
-            String fecha = (new StringBuilder(String.valueOf(dia))).append("/").append(mes2).append("/").append(String.valueOf(anio).substring(2, 4)).toString();
-            db.inserTo(num, fecha);
-            resultado = "No disponible";
-            return;
-            */
-            String matricula = m.group();
-            String num = rutinas.sacoCeros(matricula);
-            String mes2 = rutinas.getNumByMes(mes);
-            String fecha = (new StringBuilder(String.valueOf(dia))).append("/").append(mes2).append("/").append(String.valueOf(anio).substring(2, 4)).toString();
-            resultado = "No disponible";
-            System.out.println("B: " + resultado + "   " + num + "   " + fecha);
-        } else
-        {
-            return;
+        } catch (Exception e) {
+            System.err.println(String.format("No pude insertar en la base de datos. Num: %s. Fecha: %s", num, fecha));
         }
     }
 
@@ -151,8 +159,10 @@ class newSocket extends Thread
         String linea = "";
         try
         {
-            while((linea = lectura.readLine()) != null) 
+            while((linea = lectura.readLine()) != null) {
+//                System.out.println(linea);
                 proceso(linea);
+            }
         }
         catch(IOException e)
         {
