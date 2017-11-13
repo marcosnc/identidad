@@ -1,0 +1,11 @@
+818723 3/11/2017  -> 15-036791/1	03/11/2017	14:31	Pase a Inscripciones
+              Fabi prefiere: 15-36791/1	03/11/2017	14:31	Pase a Inscripciones
+
+              XX-YYYYY/ZZZ
+              XX va del 1 al 21
+              YYYYY son 5 Y y los ceros adelante no sirven
+              /ZZZ es optativo, aparece si es un departamento
+
+
+
+00814281 - 02/11/17  -> 08-005778/291	02/11/2017	14:22	Pase a Inscripciones
