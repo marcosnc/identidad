@@ -3,10 +3,14 @@
 // Decompiler options: packimports(3) 
 // Source File Name:   newSocket.java
 
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.*;
 import java.net.Proxy.Type;
-import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,9 +18,17 @@ class newSocket extends Thread
 {
 	private Proxy proxy;
 	private String address;
+
+	private List<String> lineasAIgnorar = new ArrayList<>();
 	
 	public newSocket(String address, int n, String d, String m, int a, String proxyHost, String proxyPort)
     {
+        lineasAIgnorar.add("https://informes.dnrpi.jus.gob.ar/sipel/SolicitudDeinforme/ObtencionDeTramite");
+        lineasAIgnorar.add("Avda. Belgrano 1130");
+        lineasAIgnorar.add("4383-9468 / 4381-4771");
+
+        System.out.println("DIRECCION: " + address);
+
         resultado = "";
         this.direccion = null;
         numero = n;
@@ -63,7 +75,7 @@ class newSocket extends Thread
 //    			URL url = new URL(completeAddress);
 //    			URLConnection conn = url.openConnection(this.proxy);
 
-    			String rawData = "numentrada="+numero+"&dia="+dia+"&mes="+mes+"&ano="+anio+"&enviar=Consultar";
+    			String rawData = "numentrada="+numero+"&dia="+dia+"&mes="+rutinas.getNumByMes(mes)+"&ano="+anio+"&enviar=Consultar";
     			String type = "application/x-www-form-urlencoded";
     			String encodedData = URLEncoder.encode( rawData, "UTF-8" ); 
 //    			URL u = new URL("http://" + address + "/seguitra/con_seguimi.php");
@@ -83,8 +95,24 @@ class newSocket extends Thread
         }
     }
 
+    private boolean ignorarLinea(String linea) {
+	    for(String lineaAIgnorar : lineasAIgnorar) {
+	        if (linea.contains(lineaAIgnorar)) {
+	            return true;
+            }
+        }
+        return false;
+    }
+
     private void proceso(String linea)
     {
+        System.out.println(linea);
+
+
+        if (ignorarLinea(linea)) {
+            return;
+        }
+
         // No hay información
         if (extractAndIgnore(linea,
                 "Por favor, verifique los datos e intente nuevamente",
