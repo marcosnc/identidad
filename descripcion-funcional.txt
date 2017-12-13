@@ -9,3 +9,34 @@
 
 
 00814281 - 02/11/17  -> 08-005778/291	02/11/2017	14:22	Pase a Inscripciones
+
+
+
+curl -X POST http://www.dnrpi.jus.gov.ar/seguitra/index.php \
+-d 'numentrada=814281&dia=2&mes=11&anio=2017&enviar=Consultar' \
+-H 'Content-Type:application/x-www-form-urlencoded' \
+-H 'User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36' -v
+*   Trying 200.1.63.9...
+* Connected to www.dnrpi.jus.gov.ar (200.1.63.9) port 80 (#0)
+> POST /seguitra/index.php HTTP/1.1
+> Host: www.dnrpi.jus.gov.ar
+> Accept: */*
+> Content-Type:application/x-www-form-urlencoded
+> User-Agent:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36
+> Content-Length: 57
+>
+* upload completely sent off: 57 out of 57 bytes
+< HTTP/1.1 200 OK
+< Date: Sat, 25 Nov 2017 21:34:28 GMT
+< Server: Apache/2.2.15 (CentOS) PHP/5.3.3 DAV/2 mod_ssl/2.2.15 OpenSSL/1.0.1e-fips
+< X-Powered-By: PHP/5.3.3
+< Expires: Thu, 19 Nov 1981 08:52:00 GMT
+< Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+< Pragma: no-cache
+< Content-Type: text/html
+< Content-Language: es
+< Set-Cookie: PHPSESSID=0u50efj73kphpe5h8fh03lcmm4; path=/
+< Via: 1.1 www.dnrpi.jus.gob.ar
+< Vary: Accept-Encoding
+< Content-Length: 18899
+<
