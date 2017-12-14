@@ -34,9 +34,16 @@ public class FormConsultas implements LogTracker {
     private JPanel panelBottom;
     private JButton btnSearch;
 
+    private GestorDeConsultas consultas;
+
     public FormConsultas(Configuration configuration, Store store) {
 
-        btnAdd.addActionListener(e -> txtTramiteHasta.setText( String.valueOf(Rutinas.intValue(txtTramiteHasta.getText()) + Rutinas.intValue(txtIncremento.getText()))));
+        btnAdd.addActionListener(e -> {
+            if(Rutinas.intValue(txtTramiteHasta.getText()) < Rutinas.intValue(txtTramiteDesde.getText())) {
+                txtTramiteHasta.setText( String.valueOf(Rutinas.intValue(txtTramiteDesde.getText())));
+            }
+            txtTramiteHasta.setText( String.valueOf(Rutinas.intValue(txtTramiteHasta.getText()) + Rutinas.intValue(txtIncremento.getText())));
+        });
 
         btnSubstract.addActionListener(e -> {
             int newValue = Rutinas.intValue(txtTramiteHasta.getText()) - Rutinas.intValue(txtIncremento.getText());
@@ -53,11 +60,9 @@ public class FormConsultas implements LogTracker {
                 int  tramiteFinal   = parseTramite(txtTramiteHasta.getText());
                 Date fecha          = ((Calendar) datePickerFecha.getModel().getValue()).getTime();
 
-                panelBottom.setVisible(true);
-                btnStart.setEnabled(false);
-                panelMain.getParent().setSize(panelMain.getParent().getWidth()+50, panelMain.getParent().getHeight()+200);
+                changeState(false);
 
-                GestorDeConsultas consultas = new GestorDeConsultas(tramiteInicial, tramiteFinal, fecha, formConsultas, configuration, store);
+                consultas = new GestorDeConsultas(tramiteInicial, tramiteFinal, fecha, formConsultas, configuration, store);
                 consultas.start();
             }
         });
@@ -76,11 +81,33 @@ public class FormConsultas implements LogTracker {
         panelBottom.setVisible(false);
     }
 
-    private void createUIComponents() {
+    private void changeState(boolean enableTopElements) {
+        setEnableTopElements(enableTopElements);
+        setEnableBottomElements(!enableTopElements);
+    }
 
+    private void setEnableTopElements(boolean enabled) {
+        txtTramiteDesde.setEnabled(enabled);
+        txtTramiteHasta.setEnabled(enabled);
+        txtIncremento.setEnabled(enabled);
+        btnAdd.setEnabled(enabled);
+        btnSubstract.setEnabled(enabled);
+        datePickerFecha.setEnabled(enabled);
+        btnStart.setEnabled(enabled);
+        panelTop.setEnabled(enabled);
+    }
+
+    private void setEnableBottomElements(boolean enabled) {
+        panelBottom.setVisible(true);
+        txtAreaLog.setEnabled(enabled);
+        btnStop.setEnabled(enabled);
+
+//        panelMain.getParent().setSize(panelMain.getParent().getWidth()+50, panelMain.getParent().getHeight()+200);
+    }
+
+    private void createUIComponents() {
         // Create DatePicker
         datePickerFecha = (JDatePickerImpl) new JDateComponentFactory().createJDatePicker();
-
     }
 
     public JPanel getPanelMain() {
@@ -91,6 +118,12 @@ public class FormConsultas implements LogTracker {
     public void addToLog(String message) {
         synchronized (txtAreaLog) {
             txtAreaLog.setText(txtAreaLog.getText() + message + "\n");
+            if (consultas.isDone()) {
+                lblProgress.setText("Procesado: 100 %");
+                changeState(true);
+            } else {
+                lblProgress.setText(String.format("Procesado: %d %%", consultas.percentageDone()));
+            }
         }
     }
 

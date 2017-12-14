@@ -65,4 +65,14 @@ public class GestorDeConsultas extends Thread  {
             logTracker.addToLog("Proceso Finalizado.");
         }
     }
+
+    public boolean isDone() {
+        return tramitesEnProceso==0;
+    }
+
+    public int percentageDone() {
+        int total = tramiteFinal - tramiteInicial + 1;
+        int done  = total - tramitesEnProceso;
+        return (done * 100) / total;
+    }
 }
