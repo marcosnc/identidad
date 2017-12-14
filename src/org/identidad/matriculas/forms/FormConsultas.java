@@ -6,18 +6,13 @@ import org.identidad.matriculas.data.Store;
 import org.identidad.matriculas.process.GestorDeConsultas;
 import org.identidad.matriculas.utils.Rutinas;
 import org.jdatepicker.JDateComponentFactory;
-import org.jdatepicker.JDatePicker;
-import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
-import org.jdatepicker.impl.UtilDateModel;
 
 import javax.swing.*;
-import javax.swing.text.DateFormatter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Properties;
 
 public class FormConsultas implements LogTracker {
     private JPanel panelMain;
@@ -37,6 +32,7 @@ public class FormConsultas implements LogTracker {
     private JLabel lblProgress;
     private JPanel panelTop;
     private JPanel panelBottom;
+    private JButton btnSearch;
 
     public FormConsultas(Configuration configuration, Store store) {
 
@@ -57,10 +53,27 @@ public class FormConsultas implements LogTracker {
                 int  tramiteFinal   = parseTramite(txtTramiteHasta.getText());
                 Date fecha          = ((Calendar) datePickerFecha.getModel().getValue()).getTime();
 
+                panelBottom.setVisible(true);
+                btnStart.setEnabled(false);
+                panelMain.getParent().setSize(panelMain.getParent().getWidth()+50, panelMain.getParent().getHeight()+200);
+
                 GestorDeConsultas consultas = new GestorDeConsultas(tramiteInicial, tramiteFinal, fecha, formConsultas, configuration, store);
                 consultas.start();
             }
         });
+        btnSearch.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFrame jFrame = new JFrame("Busquedas");
+                jFrame.setContentPane(new FormBusquedas(store).getPannelMain());
+                jFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                jFrame.pack();
+                jFrame.setSize(jFrame.getWidth(), 250);
+                jFrame.setVisible(true);
+            }
+        });
+
+        panelBottom.setVisible(false);
     }
 
     private void createUIComponents() {
