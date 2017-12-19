@@ -74,11 +74,13 @@ public class FormConsultas implements LogTracker {
                 jFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 jFrame.pack();
                 jFrame.setSize(jFrame.getWidth(), 250);
+                jFrame.setLocation(
+                        (int) panelMain.getParent().getLocationOnScreen().getX()+panelMain.getParent().getWidth(),
+                        (int) panelMain.getParent().getLocationOnScreen().getY());
                 jFrame.setVisible(true);
             }
         });
 
-        panelBottom.setVisible(false);
     }
 
     private void changeState(boolean enableTopElements) {
@@ -99,10 +101,9 @@ public class FormConsultas implements LogTracker {
 
     private void setEnableBottomElements(boolean enabled) {
         panelBottom.setVisible(true);
-        txtAreaLog.setEnabled(enabled);
+//        txtAreaLog.setEnabled(enabled);
         btnStop.setEnabled(enabled);
 
-//        panelMain.getParent().setSize(panelMain.getParent().getWidth()+50, panelMain.getParent().getHeight()+200);
     }
 
     private void createUIComponents() {
